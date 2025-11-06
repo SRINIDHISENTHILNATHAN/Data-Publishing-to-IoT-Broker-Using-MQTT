@@ -74,30 +74,60 @@ Broker Message: The message "Hello, MQTT!" will be published to the topic test/t
 !pip install paho-mqtt
 ```
 ```
+import time
 import paho.mqtt.client as mqtt
-broker_address = "broker.hivemq.com"
-broker_port = 1883
-topic = "test/topic"
 
-client = mqtt.Client()
-client.connect(broker_address, broker_port, keepalive=60)
-message = "hello MQTT"
-client.publish(topic,message)
+broker = "4c64564993cf4c17935a510839948e22.s1.eu.hivemq.cloud"
+port = 8883
+topic = "iot/demo/sensor"
+
+username = "hivemq.webclient.1762400995630"
+password = "1hr9eRWq!#6>FDPak8G?"
+
+client = mqtt.Client(client_id="python-publisher-001",
+                     callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+
+client.username_pw_set(username, password)
+
+client.tls_set()          
+def on_connect(client, userdata, flags, reasonCode, properties):
+    print("Connected to broker, reasonCode:", reasonCode)
+
+def on_publish(client, userdata, mid):
+    print("on_publish called, mid:", mid)
+
+def on_disconnect(client, userdata, reasonCode, properties):
+    print("Disconnected, reasonCode:", reasonCode)
+
+client.on_connect = on_connect
+client.on_publish = on_publish
+client.on_disconnect = on_disconnect
+client.connect(broker, port, keepalive=60)
+client.loop_start()
+message = "srinidhi senthil"
+info = client.publish(topic, payload=message, qos=1, retain=True)
+
+info.wait_for_publish()
+
+time.sleep(0.2)
+
+client.loop_stop()
 client.disconnect()
-print(f"Message '{message}' published to topic '{topic}'")
+
+print(f"Message '{message}' published to topic '{topic}' (qos=1 retain=True)")
 ```
 ## output:
-![Screenshot 2025-05-23 151554](https://github.com/user-attachments/assets/f8e4d0f4-67fc-458c-80a5-1a9050157abd)
-![Screenshot 2025-05-23 151614](https://github.com/user-attachments/assets/26f99312-bc7a-42da-a20b-25fb6dba1528)
-![Screenshot 2025-05-23 151643](https://github.com/user-attachments/assets/be5570e2-094a-49bf-a28f-f0215b390eba)
 
-  
+<img width="1892" height="838" alt="image" src="https://github.com/user-attachments/assets/15f93ba3-f181-4999-980e-bfca2a37e538" />
+
+
 
 
 
 
  ## Simulation Screenshots:
-(Add screenshots of the MQTT client showing the message subscription and the message published on the broker.)
+<img width="1909" height="910" alt="image" src="https://github.com/user-attachments/assets/b7b89d5c-18dd-4686-bbed-8cdb9449dea7" />
+
 
  ## Results:
 The data was successfully published to the MQTT broker. The experiment demonstrated how to use the MQTT protocol to transfer data to an IoT broker, enabling remote communication between devices or applications. The message was confirmed to be received by the topic, and this communication can be extended to more complex IoT systems.
